@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Search</title>
+</head>
+<body>
+    <h1>Github</h1>
+    <button id='btnRepos'>Repositories</button>
+    <textarea id='txtRepos'></textarea>
+    
+    <br>
+    
+    <input type="radio" id="flaky" name="keyWords" value="flaky">
+        <label for="flaky">Flaky</label><br>
+    <input type="radio" id="flakey" name="keyWords" value="flakey">
+        <label for="flakey">Flakey</label><br>
+    <input type="radio" id="flakiness" name="keyWords" value="flakiness">
+        <label for="flakiness">Flakiness</label><br>
+    <input type="radio" id="intermit" name="keyWords" value="intermit">
+        <label for="intermit">Intermit</label><br>
+    <input type="radio" id="fragile" name="keyWords" value="fragile">
+        <label for="fragile">Fragile</label><br>
+    <input type="radio" id="brittle" name="keyWords" value="brittle">
+        <label for="brittle">Brittle</label><br>
+    <input type="radio" id="intermittent" name="keyWords" value="intermittent">
+        <label for="intermittent">Intermittent</label><br>
+    <input type="radio" id="non-deterministic test" name="keyWords" value="non-deterministic test">
+        <label for="non-deterministic test">non-deterministic test</label><br>
+
+
+    <button id='btnCommits'>Commits</button>
+    <div id="divResult">
+
+    </div>
+    <script>
+        const btnRepos = document.getElementById("btnRepos")
+        const btnCommits = document.getElementById("btnCommits")
+        const btnIssues = document.getElementById("btnIssues")
+
+        const txtRepos = document.getElementById("txtRepos")
+        
+        const radioButton = document.getElementsByName("keyWords")
+
+        const divResult = document.getElementById("divResult")
+        btnRepos.addEventListener("click", e=> getRepos())
+        btnCommits.addEventListener("click",getCommits)
+        btnIssues.addEventListener("click" , e=> getIssues())
+
+        async function getRepos(url = "https://api.github.com/search/repositories?q=javascript sort:stars"){
+            clear();
+            //const url = "https://api.github.com/search/repositories?q=javascript sort:stars"
+            //const url = "https://api.github.com/search/commits?q=javascript+flaky+test%3order"
+            const response = await fetch(url)
+            const link = response.headers.get("link")
+                      
+            const result = await response.json()
+            
+            result.items.forEach(i=>{ 
+
+                const anchor = document.createElement("a")
+                anchor.href = i.html_url;
+                anchor.textContent = i.full_name;
+                divResult.appendChild(anchor)
+                divResult.appendChild(document.createElement("br"))
+                
+             })
+
+             pagination(link);
+             
+        }
+
+        async function getCommits(){
+            clear();
+            const repo = "repo:" + txtRepos.value;
+            const keyWord = getKeyWord();
+            //url = "https://api.github.com/search/commits?q=flaky+repo%3meteor/meteor&page=2";
+            //url = "https://api.github.com/search/commits?q=flaky%20repo:nodejs/node&page=16";
+            const url = "https://api.github.com/search/commits?q=" + keyWord + " " + repo;
+
+                       
+            const headers = {
+                "Accept": "application/vnd.github.cloak-preview"
+            }
+            const response = await fetch(url, {
+                "method" : "GET",
+                "headers" : headers
+            })
+            const result = await response.json()
+
+            result.items.forEach(i=>{ 
+
+                const anchor = document.createElement("a")
+                anchor.href = i.html_url;
+                anchor.textContent = i.html_url;
+                divResult.appendChild(anchor)
+                divResult.appendChild(document.createElement("br"))
+
+             })
+        }
+
+                
+        function getKeyWord(){
+            const rbs = document.querySelectorAll('input[name="keyWords"]');
+            let selectedValue;
+            for (const rb of rbs) {
+                if (rb.checked) {
+                    selectedValue = rb.value;
+                    break;
+                }
+            }
+            return selectedValue;
+         }
+
+        function pagination(link){
+            //pagination
+            //<https://api.github.com/search/repositories?q=javascript+sort%3Astars&page=2>; rel="next", <https://api.github.com/search/repositories?q=javascript+sort%3Astars&page=34>; rel="last"
+
+            const links = link.split(",")
+
+            const urls =links.map(a=> {
+                return{
+                    url : a.split(";")[0].replace(">","").replace("<",""),
+                    title : a.split(";")[1].replace("rel=","")
+                }
+            })
+
+            urls.forEach ( u=> {
+                 const btn = document.createElement("Button")
+                 btn.textContent = u.title
+                 btn.addEventListener("click", e=> getRepos(u.url))
+                 divResult.appendChild(btn)
+             })
+
+        }
+        
+        function clear(){
+            while(divResult.firstChild) 
+                divResult.removeChild(divResult.firstChild);
+        }
+    </script>
+</body>
+</html>
