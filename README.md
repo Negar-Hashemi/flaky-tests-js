@@ -7,6 +7,9 @@ This is the artifact for the paper:
 In this paper, we study causes of and the responses to flaky tests in popular open-source JavaScript projects. Our full artifact package (including scripts used and data files) is available on Zenodo ([![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6673741.svg)](https://doi.org/10.5281/zenodo.6673741)
 ) ([download from here](https://zenodo.org/record/6673741)).
 
+*We are applying for an "Available" badge.*
+
+
 The artifact package contains the following:
 
 1. **./Data/..**
